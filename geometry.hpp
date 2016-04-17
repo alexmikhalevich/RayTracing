@@ -50,6 +50,16 @@ class CPoint3D {
 			m_y /= div;
 			m_z /= div;
 		}
+		void operator+=(double a) {
+			m_x += a;
+			m_y += a;
+			m_z += a;
+		}
+		void operator-=(double a) {
+			m_x -= a;
+			m_y -= a;
+			m_z -= a;
+		}
 };
 
 class CVector3D {
@@ -104,3 +114,5 @@ class CColor {
 			m_blue = color.get_blue();
 		}
 };
+
+enum EPlane { XY, YZ, XZ, NONE };
