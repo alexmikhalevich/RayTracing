@@ -1,7 +1,11 @@
 #include <cmath>
 #include <algorithm>
+#include <iostream>
+#include <cstdlib>
 
 const double EPS = 0.0001;
+
+enum EPlane { XY, YZ, XZ, NONE };
 
 class CPoint3D {
 	private:
@@ -83,9 +87,52 @@ class CVector3D {
 			m_end = end; 
 			m_coordinates = m_end - m_begin;
 		}
-		void normalize() {
+		inline void normalize() {
 			double length = m_begin.get_distance(m_end); 
 			m_coordinates /= length;
+		}
+		inline double length() const {
+			return std::sqrt(m_coordinates.get_x() * m_coordinates.get_x() 
+				+ m_coordinates.get_y() * m_coordinates.get_y() 
+				+ m_coordinates.get_z() * m_coordinates.get_z());
+		}
+		inline bool intersects_with_plane(EPlane plane, const CPoint3D& plane_coord, CPoint3D& intersection) const {
+			double coeff;
+
+			switch(plane) {
+				case EPlane::XY:
+					if(((plane_coord.get_z() < m_begin.get_z()) && (m_coordinates.get_z() > 0))
+							|| ((plane_coord.get_z() > m_begin.get_z()) && (m_coordinates.get_z() < 0)))
+						return false;
+					coeff = (plane_coord.get_z() - m_begin.get_z()) / m_coordinates.get_z(); 
+					intersection = CPoint3D(m_begin.get_x() + m_coordinates.get_x() * coeff,
+							m_begin.get_y() + m_coordinates.get_y() * coeff,
+							plane_coord.get_z());
+					break;
+				case EPlane::YZ:
+					if(((plane_coord.get_x() < m_begin.get_x()) && (m_coordinates.get_x() > 0))
+							|| ((plane_coord.get_x() > m_begin.get_x()) && (m_coordinates.get_x() < 0)))
+						return false;
+					coeff = (plane_coord.get_x() - m_begin.get_x()) / m_coordinates.get_x(); 
+					intersection = CPoint3D(plane_coord.get_x(),
+							m_begin.get_y() + m_coordinates.get_y() * coeff,
+							m_begin.get_z() + m_coordinates.get_z() * coeff);
+					break;
+				case EPlane::XZ:
+					if(((plane_coord.get_y() < m_begin.get_y()) && (m_coordinates.get_y() > 0))
+							|| ((plane_coord.get_y() > m_begin.get_y()) && (m_coordinates.get_y() < 0)))
+						return false;
+					coeff = (plane_coord.get_y() - m_begin.get_y()) / m_coordinates.get_y(); 
+					intersection = CPoint3D(m_begin.get_x() + m_coordinates.get_x() * coeff,
+							plane_coord.get_y(),
+							m_begin.get_z() + m_coordinates.get_z() * coeff);
+					break;
+				case EPlane::NONE:
+					std::cerr << "[EE]: unable to determine intersection: no plane" << std::endl;
+					exit(1);
+					break;
+			}
+			return true;
 		}
 		void operator=(const CVector3D& v) {
 			m_begin = v.get_begin();
@@ -115,4 +162,3 @@ class CColor {
 		}
 };
 
-enum EPlane { XY, YZ, XZ, NONE };
