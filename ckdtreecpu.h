@@ -21,7 +21,9 @@ class CVoxel {
 		CPoint3D get_top() const { return m_top; }
 		inline void split(EPlane plane, const CPoint3D& plane_coord, CVoxel& left_vox, CVoxel& right_vox) const;
 		inline bool contains(IObject3D* object) const;
+		inline bool contains_point(const CPoint3D& point) const;
 		inline int contained_elements(const std::vector<IObject3D*>& objects) const;
+		inline bool intersects_with_vector(const CVector3D& vector) const; 
 
 		void operator=(const CVoxel& v) {
 			m_bottom = v.get_bottom();
@@ -39,12 +41,13 @@ class CKDNode {
 		inline CKDNode* MakeLeaf(const std::vector<IObject3D*>& objects);
 		double MinimizeSAH(const std::vector<IObject3D*>& obj, EPlane plane, double bestSAH, const CVoxel& voxel, 
 				double Ssplit,	double Snot_split, CPoint3D& plane_coord, EPlane& res_plane) const;
+		inline void FindPlane(const std::vector<IObject3D*>& objects, const CVoxel& voxel,
+				int depth, EPlane& plane, CPoint3D& plane_coord);
 	public:
 		CKDNode() : m_plane(EPlane::NONE), m_coordinate(CPoint3D()), m_left(NULL), m_right(NULL) {}
 		CKDNode(EPlane p, const CPoint3D& pnt, CKDNode* l, CKDNode* r) : m_plane(p), m_coordinate(pnt), m_left(l), m_right(r) {}
-		inline void find_plane(const std::vector<IObject3D*>& objects, const CVoxel& voxel,
-				int depth, EPlane& plane, CPoint3D& plane_coord);
 		inline CKDNode* build(std::vector<IObject3D*>& objects, const CVoxel& voxel, int depth);
+		bool find_intersection(const CVoxel& voxel, const CVector3D& vector, IObject3D* nearest_object, CPoint3D& nearest_intersect);
 };
 
 class CKDTreeCPU {
@@ -54,4 +57,5 @@ class CKDTreeCPU {
 	public:
 		CKDTreeCPU() = delete;
 		CKDTreeCPU(std::vector<IObject3D*>& obj);
+		bool find_intersection(const CVector3D& vector, IObject3D* nearest_object, CPoint3D& nearest_intersect);
 };

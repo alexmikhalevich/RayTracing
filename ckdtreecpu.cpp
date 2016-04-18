@@ -70,10 +70,50 @@ inline int CVoxel::contained_elements(const std::vector<IObject3D*>& objects) co
 	return result;
 }
 
-CKDTreeCPU::CKDTreeCPU(std::vector<IObject3D*>& objects) {
-	m_bounding_box = CVoxel(objects);
-	m_root->build(objects, m_bounding_box, 0);
+inline bool CVoxel::contains_point(const CPoint3D& point) const {
+	return ((m_bottom.get_x() < point.get_x() && m_top.get_x() > point.get_x()
+				&& m_bottom.get_y() < point.get_y() && m_top.get_y() > point.get_y()
+				&& m_bottom.get_z() < point.get_z() && m_top.get_z() > point.get_z()));
 }
+
+inline bool CVoxel::intersects_with_vector(const CVector3D& vector) const {
+	if(contains_point(vector.get_begin())) return true;
+
+	CPoint3D intersection;
+	CPoint3D plane_coord;
+
+	plane_coord.set_z(m_bottom.get_z());
+	if(vector.intersects_with_plane(EPlane::XY, plane_coord, intersection) 
+			&& (intersection.get_x() > m_bottom.get_x() && intersection.get_x() < m_top.get_x())
+			&& (intersection.get_y() > m_bottom.get_y() && intersection.get_y() < m_top.get_y()))
+		return true;
+	plane_coord.set_z(m_top.get_z());
+	if(vector.intersects_with_plane(EPlane::XY, plane_coord, intersection) 
+			&& (intersection.get_x() > m_bottom.get_x() && intersection.get_x() < m_top.get_x())
+			&& (intersection.get_y() > m_bottom.get_y() && intersection.get_y() < m_top.get_y()))
+		return true;
+	plane_coord.set_y(m_bottom.get_y());
+	if(vector.intersects_with_plane(EPlane::XZ, plane_coord, intersection) 
+			&& (intersection.get_x() > m_bottom.get_x() && intersection.get_x() < m_top.get_x())
+			&& (intersection.get_z() > m_bottom.get_z() && intersection.get_z() < m_top.get_z()))
+		return true;
+	plane_coord.set_y(m_top.get_y());
+	if(vector.intersects_with_plane(EPlane::XZ, plane_coord, intersection) 
+			&& (intersection.get_x() > m_bottom.get_x() && intersection.get_x() < m_top.get_x())
+			&& (intersection.get_z() > m_bottom.get_z() && intersection.get_z() < m_top.get_z()))
+	plane_coord.set_z(m_bottom.get_x());
+	if(vector.intersects_with_plane(EPlane::YZ, plane_coord, intersection) 
+			&& (intersection.get_z() > m_bottom.get_z() && intersection.get_z() < m_top.get_z())
+			&& (intersection.get_y() > m_bottom.get_y() && intersection.get_y() < m_top.get_y()))
+		return true;
+	plane_coord.set_z(m_top.get_x());
+	if(vector.intersects_with_plane(EPlane::YZ, plane_coord, intersection) 
+			&& (intersection.get_z() > m_bottom.get_z() && intersection.get_z() < m_top.get_z())
+			&& (intersection.get_y() > m_bottom.get_y() && intersection.get_y() < m_top.get_y()))
+		return true;
+	return false;
+}
+
 
 double CKDNode::MinimizeSAH(const std::vector<IObject3D*>& obj, EPlane plane, double bestSAH, const CVoxel& voxel, 
 		double Ssplit, double Snot_split, CPoint3D& plane_coord, EPlane& res_plane) const {
@@ -108,7 +148,7 @@ double CKDNode::MinimizeSAH(const std::vector<IObject3D*>& obj, EPlane plane, do
 	return resSAH;
 }
 
-inline void CKDNode::find_plane(const std::vector<IObject3D*>& objects, const CVoxel& voxel,
+inline void CKDNode::FindPlane(const std::vector<IObject3D*>& objects, const CVoxel& voxel,
 		int depth, EPlane& plane, CPoint3D& plane_coord) {
 	if((depth >= MAX_DEPTH) || (objects.size() <= OBJECTS_IN_LEAF)) {
 		plane = EPlane::NONE;
@@ -138,7 +178,7 @@ inline void CKDNode::find_plane(const std::vector<IObject3D*>& objects, const CV
 inline CKDNode* CKDNode::build(std::vector<IObject3D*>& objects, const CVoxel& voxel, int depth) {
 	EPlane plane;
 	CPoint3D plane_coord;
-	find_plane(objects, voxel, depth, plane, plane_coord);
+	FindPlane(objects, voxel, depth, plane, plane_coord);
 	
 	if(plane == EPlane::NONE)
 		return MakeLeaf(objects);
@@ -157,4 +197,108 @@ inline CKDNode* CKDNode::MakeLeaf(const std::vector<IObject3D*>& objects) {
 	CKDNode* node = new CKDNode();
 	if(objects.size()) m_objects = objects;
 	return node;
+}
+
+bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
+		IObject3D* nearest_object, CPoint3D& nearest_intersect) {
+	if(m_plane == EPlane::NONE) {
+		if(m_objects.size()) {
+			CPoint3D intersection;
+			double min_dist = -1.0, cur_dist;
+			for(IObject3D* obj : m_objects) {
+				if(obj->intersect(vector, intersection) 
+						&& voxel.contains_point(intersection)){
+					CVector3D v(vector.get_begin(), intersection);
+					cur_dist = v.length();
+					if((min_dist - cur_dist < EPS && min_dist - cur_dist > 0) 
+							|| (min_dist < 0)) {
+						nearest_object = obj;
+						nearest_intersect = intersection;
+						min_dist = cur_dist;
+					}
+				}
+			}
+
+			if(min_dist >= 0) return true;
+		}
+		return false;
+	}
+
+	CVoxel front_vox;
+	CVoxel back_vox;
+
+	CKDNode* front_node;
+	CKDNode* back_node;
+
+	switch(m_plane) {
+		case EPlane::XY:
+			if(((m_coordinate.get_z() > voxel.get_bottom().get_z()) 
+					&& (m_coordinate.get_z() > vector.get_begin().get_z()))
+					|| ((m_coordinate.get_z() < voxel.get_bottom().get_z())
+					&& (m_coordinate.get_z() < vector.get_begin().get_z()))) {
+				front_node = m_left;
+				back_node = m_right;
+				voxel.split(m_plane, m_coordinate, front_vox, back_vox);
+			}
+			else {
+				front_node = m_right;
+				back_node = m_left;
+				voxel.split(m_plane, m_coordinate, back_vox, front_vox);
+			}
+			break;
+
+		case EPlane::XZ:
+			if(((m_coordinate.get_y() > voxel.get_bottom().get_y()) 
+					&& (m_coordinate.get_y() > vector.get_begin().get_y()))
+					|| ((m_coordinate.get_y() < voxel.get_bottom().get_y())
+					&& (m_coordinate.get_y() < vector.get_begin().get_y()))) {
+				front_node = m_left;
+				back_node = m_right;
+				voxel.split(m_plane, m_coordinate, front_vox, back_vox);
+			}
+			else {
+				front_node = m_right;
+				back_node = m_left;
+				voxel.split(m_plane, m_coordinate, back_vox, front_vox);
+			}
+			break;
+
+		case EPlane::YZ:
+			if(((m_coordinate.get_x() > voxel.get_bottom().get_x()) 
+					&& (m_coordinate.get_x() > vector.get_begin().get_x()))
+					|| ((m_coordinate.get_x() < voxel.get_bottom().get_x())
+					&& (m_coordinate.get_x() < vector.get_begin().get_x()))) {
+				front_node = m_left;
+				back_node = m_right;
+				voxel.split(m_plane, m_coordinate, front_vox, back_vox);
+			}
+			else {
+				front_node = m_right;
+				back_node = m_left;
+				voxel.split(m_plane, m_coordinate, back_vox, front_vox);
+			}
+			break;
+
+		case EPlane::NONE:
+			std::cerr << "[EE]: No plane" << std::endl;
+			exit(1);
+			break;
+	}
+
+	if(front_vox.intersects_with_vector(vector)
+		&& front_node->find_intersection(front_vox, vector, nearest_object, nearest_intersect))
+		return true;
+
+	return (back_vox.intersects_with_vector(vector) 
+			&& back_node->find_intersection(back_vox, vector, nearest_object, nearest_intersect));
+}
+
+CKDTreeCPU::CKDTreeCPU(std::vector<IObject3D*>& objects) {
+	m_bounding_box = CVoxel(objects);
+	m_root->build(objects, m_bounding_box, 0);
+}
+
+bool CKDTreeCPU::find_intersection(const CVector3D& vector, IObject3D* nearest_object, CPoint3D& nearest_intersect) {
+	return (m_bounding_box.intersects_with_vector(vector)
+			&& m_root->find_intersection(m_bounding_box, vector, nearest_object, nearest_intersect));
 }
