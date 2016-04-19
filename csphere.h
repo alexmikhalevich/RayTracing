@@ -21,6 +21,8 @@ class CSphere : public IObject3D {
 		virtual bool intersect(const CVector3D& ray_vector, CPoint3D& intersection);
 		virtual CColor get_intersection_color(const CPoint3D& intersection);
 		virtual CVector3D get_normal_vector(const CPoint3D& intersection);
+		virtual CPoint3D get_min_boundary_point() const;
+		virtual CPoint3D get_max_boundary_point() const;
 
 		void operator=(const CSphere& sphere) {
 			m_radius = sphere.get_radius();

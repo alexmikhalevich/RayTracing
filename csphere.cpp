@@ -39,3 +39,15 @@ CVector3D CSphere::get_normal_vector(const CPoint3D& intersection) {
 	n.normalize();
 	return n;
 }
+
+CPoint3D CSphere::get_max_boundary_point() const {
+	return CPoint3D(m_center.get_x() + m_radius + 1, 
+			m_center.get_y() + m_radius + 1, 
+			m_center.get_z() + m_radius + 1);
+}
+
+CPoint3D CSphere::get_min_boundary_point() const {
+	return CPoint3D(m_center.get_x() - m_radius - 1,
+			m_center.get_y() - m_radius - 1,
+			m_center.get_z() - m_radius - 1);
+}
