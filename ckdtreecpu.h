@@ -24,6 +24,7 @@ class CVoxel {
 		inline bool contains_point(const CPoint3D& point) const;
 		inline int contained_elements(const std::vector<IObject3D*>& objects) const;
 		inline bool intersects_with_vector(const CVector3D& vector) const; 
+		inline int sort_and_count_contained(std::vector<IObject3D*>& objects) const;
 
 		void operator=(const CVoxel& v) {
 			m_bottom = v.get_bottom();

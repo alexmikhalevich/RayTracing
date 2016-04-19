@@ -114,6 +114,21 @@ inline bool CVoxel::intersects_with_vector(const CVector3D& vector) const {
 	return false;
 }
 
+inline int CVoxel::sort_and_count_contained(std::vector<IObject3D*>& objects) const {
+	int begin = 0;
+	int end = objects.size();
+
+	while(begin <= end) {
+		while((begin <= end) && (contains(objects[begin]))) begin++;
+		while((begin <= end) && (!contains(objects[end]))) end--;
+
+		IObject3D* tmp = objects[begin];
+		objects[begin] = objects[end];
+		objects[end] = tmp;
+		begin++;
+		end--;
+	}
+}
 
 double CKDNode::MinimizeSAH(const std::vector<IObject3D*>& obj, EPlane plane, double bestSAH, const CVoxel& voxel, 
 		double Ssplit, double Snot_split, CPoint3D& plane_coord, EPlane& res_plane) const {
@@ -176,6 +191,7 @@ inline void CKDNode::FindPlane(const std::vector<IObject3D*>& objects, const CVo
 }
 
 inline CKDNode* CKDNode::build(std::vector<IObject3D*>& objects, const CVoxel& voxel, int depth) {
+	//TODO: I need to pass an iterator here in func arguments to prevent copying parts of objects[]
 	EPlane plane;
 	CPoint3D plane_coord;
 	FindPlane(objects, voxel, depth, plane, plane_coord);
@@ -186,6 +202,8 @@ inline CKDNode* CKDNode::build(std::vector<IObject3D*>& objects, const CVoxel& v
 	CVoxel left_vox;
 	CVoxel right_vox;
 	voxel.split(plane, plane_coord, left_vox, right_vox);
+	int left_elements = left_vox.sort_and_count_contained(objects);	//TODO: may be used in iterator
+	int right_elements = right_vox.sort_and_count_contained(objects);
 	CKDNode* left_node = build(objects, left_vox, depth + 1);
 	CKDNode* right_node = build(objects, right_vox, depth + 1);
 	CKDNode* node = new CKDNode(plane, plane_coord, left_node, right_node); 
