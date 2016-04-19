@@ -1,5 +1,18 @@
 #include "ckdtreecpu.h"
 
+/*
+ * CVoxel - this class implements a 3D-element (some kind of parallelepiped). All scene space is
+ * devided into voxels (using KD-tree) to increase the speed of ray tracing technique.
+ * m_bottom - point, which determines the bottom left vertice of voxel;
+ * m_top - point, which determines the top right vertice of voxel.
+ */
+
+
+/*
+ * The constructor of voxel object.
+ * begin - the iterator to the beginning of the array, which contains scene objects;
+ * end - the iterator to the ending of the array, which contains scene objects.
+ */
 CVoxel::CVoxel(const ObjIterator& begin, const ObjIterator& end) {
 	if(begin == end) {
 		m_bottom = CPoint3D(-1.0, -1.0, -1.0);
@@ -23,6 +36,15 @@ CVoxel::CVoxel(const ObjIterator& begin, const ObjIterator& end) {
 	m_top += 1.0;
 }
 
+/* 
+ * Splits the voxel into two separate voxels.
+ * plane - determines the section plane (XY, YZ, XZ or NONE);
+ * plane_coord - the coordinate of the section plane;
+ *
+ * Results:
+ * left_vox - the left voxel, which was separated;
+ * right_vox - the right voxel, which was separated.
+ */
 inline void CVoxel::split(EPlane plane, const CPoint3D& plane_coord, CVoxel& left_vox, CVoxel& right_vox) const {
 	CPoint3D left_top, left_bottom, right_top, right_bottom;
 	left_top = m_top;
@@ -51,6 +73,13 @@ inline void CVoxel::split(EPlane plane, const CPoint3D& plane_coord, CVoxel& lef
 	right_vox = CVoxel(right_bottom, right_top);
 }
 
+/*
+ * Determines if voxel contains object.
+ * object - the object, which should be checked;
+ *
+ * Returns value:
+ * the result of checking: true or false.
+ */
 inline bool CVoxel::contains(IObject3D* object) const {
 	CPoint3D min_p = object->get_min_boundary_point();
 	CPoint3D max_p = object->get_max_boundary_point();
@@ -64,6 +93,14 @@ inline bool CVoxel::contains(IObject3D* object) const {
 			
 }
 
+/*
+ * Counts elements, which are contained in voxel.
+ * begin - the iterator to the beginning of the array, which contains scene objects;
+ * end - the iterator to the ending of the array, which contains scene objects.
+ *
+ * Returns value:
+ * the number of objects, which the current voxel contains.
+ */
 inline int CVoxel::contained_elements(const ObjIterator& begin, const ObjIterator& end) const {
 	int result = 0;
 	for(ObjIterator iter = begin; iter != end; ++iter)
@@ -71,12 +108,24 @@ inline int CVoxel::contained_elements(const ObjIterator& begin, const ObjIterato
 	return result;
 }
 
+/* Checks if the current voxel contains point.
+ * point - the point, which should be checked.
+ *
+ * Returns value:
+ * the result of checking: true or false.
+ */
 inline bool CVoxel::contains_point(const CPoint3D& point) const {
 	return ((m_bottom.get_x() < point.get_x() && m_top.get_x() > point.get_x()
 				&& m_bottom.get_y() < point.get_y() && m_top.get_y() > point.get_y()
 				&& m_bottom.get_z() < point.get_z() && m_top.get_z() > point.get_z()));
 }
 
+/* Checks if some vector intersects with voxel face.
+ * vector - the vector, which should be checked.
+ *
+ * Returns value:
+ * the result of checking: true of false.
+ */
 inline bool CVoxel::intersects_with_vector(const CVector3D& vector) const {
 	if(contains_point(vector.get_begin())) return true;
 
@@ -115,6 +164,15 @@ inline bool CVoxel::intersects_with_vector(const CVector3D& vector) const {
 	return false;
 }
 
+/* 
+ * Counts objects, which are contained by the current voxel, and puts all such objects in the
+ * beginning of the array.
+ * begin - the iterator to the beginning of the array, which contains scene objects;
+ * end - the iterator to the ending of the array, which contains scene objects.
+ *
+ * Returns value:
+ * the number of elements, contained by the current voxel.
+ */
 inline int CVoxel::sort_and_count_contained(const ObjIterator& begin, const ObjIterator& end) const {
 	ObjIterator b = begin;
 	ObjIterator e = end;
@@ -133,6 +191,26 @@ inline int CVoxel::sort_and_count_contained(const ObjIterator& begin, const ObjI
 	return b - begin;
 }
 
+/*
+ * CKDNode - the implementation of the KD-tree's node.
+ */
+
+/*
+ * Connected with SAH heuristic - finds the minimum of this heuristic for the particular voxel to 
+ * determine the best way of splitting it.
+ * plane - determines the section plane (XY, YZ, XZ or NONE);
+ * bestSAH - the best heuristic value, which was already calculated;
+ * voxel - the voxel, which will be splitted;
+ * Ssplit - the area of the voxel's face, which is parallel to the section plane;  
+ * Snot_split - the sum of areas of the two other faces.
+ * 
+ * Results:
+ * plane_coord - the coordinate of the section plane;
+ * res_plane - the resulting section plane.
+ *
+ * Returns value:
+ * the best value of SAH heuristic.
+ */
 double CKDNode::MinimizeSAH(EPlane plane, double bestSAH, const CVoxel& voxel, double Ssplit, 
 		double Snot_split, CPoint3D& plane_coord, EPlane& res_plane) const {
 	const double hx = voxel.get_top().get_x() - voxel.get_bottom().get_x();
@@ -166,6 +244,15 @@ double CKDNode::MinimizeSAH(EPlane plane, double bestSAH, const CVoxel& voxel, d
 	return resSAH;
 }
 
+/*
+ * Finds the best section plane for the particular voxel.
+ * voxel - the voxel, which should be splitted;
+ * depth - the current recursion depth.
+ * 
+ * Results:
+ * plane - the result section plane;
+ * plane_coord - the coordinates of the result section plane.
+ */
 inline void CKDNode::FindPlane(const CVoxel& voxel, int depth, EPlane& plane, CPoint3D& plane_coord) {
 	if((depth >= MAX_DEPTH) || (m_end - m_begin <= OBJECTS_IN_LEAF)) {
 		plane = EPlane::NONE;
@@ -192,6 +279,16 @@ inline void CKDNode::FindPlane(const CVoxel& voxel, int depth, EPlane& plane, CP
 	bestSAH = MinimizeSAH(EPlane::YZ, bestSAH, voxel, Syz, Sxz + Sxy, plane_coord, plane);
 }
 
+/*
+ * Recursively builds the KD-tree.
+ * begin - the iterator to the beginning of the array, which contains scene objects;
+ * end - the iterator to the ending if the array, which contains scene objects;
+ * voxel - voxel, which will be splitted;
+ * depth - current recursion depth.
+ *
+ * Returns value:
+ * a pointer to the constructed node.
+ */
 inline CKDNode* CKDNode::build(const ObjIterator& begin, const ObjIterator& end, const CVoxel& voxel, int depth) {
 	EPlane plane;
 	CPoint3D plane_coord;
@@ -212,6 +309,14 @@ inline CKDNode* CKDNode::build(const ObjIterator& begin, const ObjIterator& end,
 	return node;
 }
 
+/*
+ * Constructs a new leaf node.
+ * begin - the iterator to the beginning of the array, which contains scene objects;
+ * end - the iterator to the ending of the array, which contains scene objects.
+ *
+ * Returns value:
+ * a pointer to the constructed leaf.
+ */
 inline CKDNode* CKDNode::MakeLeaf(const ObjIterator& begin, const ObjIterator& end) {
 	CKDNode* node = new CKDNode();
 	if(end - begin) {
@@ -221,6 +326,18 @@ inline CKDNode* CKDNode::MakeLeaf(const ObjIterator& begin, const ObjIterator& e
 	return node;
 }
 
+/*
+ * Determines the intersection of voxel and the particular vector.
+ * voxel - the voxel, which may be intersected;
+ * vector - the vector, which may intersect a voxel;
+ *
+ * Results:
+ * nearest_object - the nearest object, which will be intersected by the vector;
+ * nearest_intersect - the point of the intersection with the nearest_object.
+ *
+ * Returns value:
+ * if the intersection exists - returns true, otherwise false.
+ */
 bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
 		IObject3D* nearest_object, CPoint3D& nearest_intersect) {
 	if(m_plane == EPlane::NONE) {
@@ -316,11 +433,29 @@ bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
 			&& back_node->find_intersection(back_vox, vector, nearest_object, nearest_intersect));
 }
 
+/*
+ * CKDTreeCPU - the KD-tree implementation (for processing on CPU).
+ */
+
+/* Constructor of the KD-tree.
+ * objects - the array of scene objects
+ */
 CKDTreeCPU::CKDTreeCPU(std::vector<IObject3D*>& objects) {
 	m_bounding_box = CVoxel(objects.begin(), objects.end());
 	m_root->build(objects.begin(), objects.end(), m_bounding_box, 0);
 }
 
+/*
+ * Determines the intersection of the particular vector and some scene object (if exists).
+ * vector - the vector, which may intersect a voxel;
+ *
+ * Results:
+ * nearest_object - the nearest object, which will be intersected by the vector;
+ * nearest_intersect - the point of the intersection with the nearest_object.
+ *
+ * Returns value:
+ * if the intersection exists - returns true, otherwise false.
+ */
 bool CKDTreeCPU::find_intersection(const CVector3D& vector, IObject3D* nearest_object, CPoint3D& nearest_intersect) {
 	return (m_bounding_box.intersects_with_vector(vector)
 			&& m_root->find_intersection(m_bounding_box, vector, nearest_object, nearest_intersect));
