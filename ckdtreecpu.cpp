@@ -193,6 +193,12 @@ inline int CVoxel::sort_and_count_contained(const ObjIterator& begin, const ObjI
 
 /*
  * CKDNode - the implementation of the KD-tree's node.
+ * m_plane - sectional plane; devides the voxel into two;
+ * m_coordinate - coordinates of the m_plane;
+ * m_left - the pointer to the left child of the current node;
+ * m_right - the pointer to the right child of the current node;
+ * m_begin - the iterator to the beginning of the array, which contains scene objects in the current voxel;
+ * m_end - the iterator to the beginning of the array, which contains scene objects in the current voxel.
  */
 
 /*
@@ -435,6 +441,8 @@ bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
 
 /*
  * CKDTreeCPU - the KD-tree implementation (for processing on CPU).
+ * m_bounding_box - scene bounding box;
+ * m_root - the root of the KD-tree.
  */
 
 /* Constructor of the KD-tree.
