@@ -1,12 +1,13 @@
 #include "ckdtreecpu.h"
 
-CVoxel::CVoxel(const std::vector<IObject3D*>& objects) {
-	if(objects.size() == 0) {
+CVoxel::CVoxel(const ObjIterator& begin, const ObjIterator& end) {
+	if(begin == end) {
 		m_bottom = CPoint3D(-1.0, -1.0, -1.0);
 		m_top = CPoint3D(1.0, 1.0, 1.0);
 	}
 
-	for(IObject3D* obj : objects) {
+	for(ObjIterator iter = begin; iter != end; ++iter) {
+		IObject3D* obj = *iter;
 		CPoint3D tmin_p = obj->get_min_boundary_point();
 		CPoint3D tmax_p = obj->get_max_boundary_point();
 
@@ -63,10 +64,10 @@ inline bool CVoxel::contains(IObject3D* object) const {
 			
 }
 
-inline int CVoxel::contained_elements(const std::vector<IObject3D*>& objects) const {
+inline int CVoxel::contained_elements(const ObjIterator& begin, const ObjIterator& end) const {
 	int result = 0;
-	for(IObject3D* obj : objects) 
-		if(contains(obj)) ++result;
+	for(ObjIterator iter = begin; iter != end; ++iter)
+		if(contains(*iter)) ++result;
 	return result;
 }
 
@@ -114,24 +115,26 @@ inline bool CVoxel::intersects_with_vector(const CVector3D& vector) const {
 	return false;
 }
 
-inline int CVoxel::sort_and_count_contained(std::vector<IObject3D*>& objects) const {
-	int begin = 0;
-	int end = objects.size();
+inline int CVoxel::sort_and_count_contained(const ObjIterator& begin, const ObjIterator& end) const {
+	ObjIterator b = begin;
+	ObjIterator e = end;
 
-	while(begin <= end) {
-		while((begin <= end) && (contains(objects[begin]))) begin++;
-		while((begin <= end) && (!contains(objects[end]))) end--;
+	while(b != e) {
+		while((b != e) && (contains(*b))) ++b;
+		while((b != e) && (!contains(*e))) --e;
 
-		IObject3D* tmp = objects[begin];
-		objects[begin] = objects[end];
-		objects[end] = tmp;
-		begin++;
-		end--;
+		IObject3D* tmp = *b;
+		*b = *e;
+		*e = tmp;
+		++b;
+		--e;
 	}
+
+	return b - begin;
 }
 
-double CKDNode::MinimizeSAH(const std::vector<IObject3D*>& obj, EPlane plane, double bestSAH, const CVoxel& voxel, 
-		double Ssplit, double Snot_split, CPoint3D& plane_coord, EPlane& res_plane) const {
+double CKDNode::MinimizeSAH(EPlane plane, double bestSAH, const CVoxel& voxel, double Ssplit, 
+		double Snot_split, CPoint3D& plane_coord, EPlane& res_plane) const {
 	const double hx = voxel.get_top().get_x() - voxel.get_bottom().get_x();
 	const double hy = voxel.get_top().get_y() - voxel.get_bottom().get_y();
 	const double hz = voxel.get_top().get_z() - voxel.get_bottom().get_z();
@@ -149,8 +152,8 @@ double CKDNode::MinimizeSAH(const std::vector<IObject3D*>& obj, EPlane plane, do
 				voxel.get_bottom().get_y() + l * hy,
 				voxel.get_bottom().get_z() + l * hz);
 		voxel.split(plane, cur_plane_coord, left_vox, right_vox);
-		curSAH = (Ssplit + l * Snot_split) * left_vox.contained_elements(obj) 
-			+ (Ssplit + r * Snot_split) * right_vox.contained_elements(obj)
+		curSAH = (Ssplit + l * Snot_split) * left_vox.contained_elements(m_begin, m_end)
+			+ (Ssplit + r * Snot_split) * right_vox.contained_elements(m_begin, m_end)
 			+ SPLIT_COST;
 
 		if(curSAH < bestSAH) {
@@ -163,9 +166,8 @@ double CKDNode::MinimizeSAH(const std::vector<IObject3D*>& obj, EPlane plane, do
 	return resSAH;
 }
 
-inline void CKDNode::FindPlane(const std::vector<IObject3D*>& objects, const CVoxel& voxel,
-		int depth, EPlane& plane, CPoint3D& plane_coord) {
-	if((depth >= MAX_DEPTH) || (objects.size() <= OBJECTS_IN_LEAF)) {
+inline void CKDNode::FindPlane(const CVoxel& voxel, int depth, EPlane& plane, CPoint3D& plane_coord) {
+	if((depth >= MAX_DEPTH) || (m_end - m_begin <= OBJECTS_IN_LEAF)) {
 		plane = EPlane::NONE;
 		return;
 	}
@@ -183,47 +185,50 @@ inline void CKDNode::FindPlane(const std::vector<IObject3D*>& objects, const CVo
 	Sxz /= Ssum;
 	Syz /= Ssum;
 
-	double bestSAH = objects.size();
+	double bestSAH = m_end - m_begin;
 	plane = EPlane::NONE;
-	bestSAH = MinimizeSAH(objects, EPlane::XY, bestSAH, voxel, Sxy, Sxz + Syz, plane_coord, plane);
-	bestSAH = MinimizeSAH(objects, EPlane::XZ, bestSAH, voxel, Sxz, Sxy + Syz, plane_coord, plane);
-	bestSAH = MinimizeSAH(objects, EPlane::YZ, bestSAH, voxel, Syz, Sxz + Sxy, plane_coord, plane);
+	bestSAH = MinimizeSAH(EPlane::XY, bestSAH, voxel, Sxy, Sxz + Syz, plane_coord, plane);
+	bestSAH = MinimizeSAH(EPlane::XZ, bestSAH, voxel, Sxz, Sxy + Syz, plane_coord, plane);
+	bestSAH = MinimizeSAH(EPlane::YZ, bestSAH, voxel, Syz, Sxz + Sxy, plane_coord, plane);
 }
 
-inline CKDNode* CKDNode::build(std::vector<IObject3D*>& objects, const CVoxel& voxel, int depth) {
-	//TODO: I need to pass an iterator here in func arguments to prevent copying parts of objects[]
+inline CKDNode* CKDNode::build(const ObjIterator& begin, const ObjIterator& end, const CVoxel& voxel, int depth) {
 	EPlane plane;
 	CPoint3D plane_coord;
-	FindPlane(objects, voxel, depth, plane, plane_coord);
+	FindPlane(voxel, depth, plane, plane_coord);
 	
 	if(plane == EPlane::NONE)
-		return MakeLeaf(objects);
+		return MakeLeaf(begin, end);
 
 	CVoxel left_vox;
 	CVoxel right_vox;
 	voxel.split(plane, plane_coord, left_vox, right_vox);
-	int left_elements = left_vox.sort_and_count_contained(objects);	//TODO: may be used in iterator
-	int right_elements = right_vox.sort_and_count_contained(objects);
-	CKDNode* left_node = build(objects, left_vox, depth + 1);
-	CKDNode* right_node = build(objects, right_vox, depth + 1);
+	int left_elements = left_vox.sort_and_count_contained(begin, end);
+	//int right_elements = right_vox.sort_and_count_contained(begin, end);
+	CKDNode* left_node = build(begin, begin + left_elements, left_vox, depth + 1);
+	CKDNode* right_node = build(begin + left_elements + 1, end, right_vox, depth + 1);
 	CKDNode* node = new CKDNode(plane, plane_coord, left_node, right_node); 
 
 	return node;
 }
 
-inline CKDNode* CKDNode::MakeLeaf(const std::vector<IObject3D*>& objects) {
+inline CKDNode* CKDNode::MakeLeaf(const ObjIterator& begin, const ObjIterator& end) {
 	CKDNode* node = new CKDNode();
-	if(objects.size()) m_objects = objects;
+	if(end - begin) {
+		m_begin = begin;
+		m_end = end;
+	}
 	return node;
 }
 
 bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
 		IObject3D* nearest_object, CPoint3D& nearest_intersect) {
 	if(m_plane == EPlane::NONE) {
-		if(m_objects.size()) {
+		if(m_end - m_begin) {
 			CPoint3D intersection;
 			double min_dist = -1.0, cur_dist;
-			for(IObject3D* obj : m_objects) {
+			for(ObjIterator iter = m_begin; iter != m_end; ++iter) {
+				IObject3D* obj = *iter;
 				if(obj->intersect(vector, intersection) 
 						&& voxel.contains_point(intersection)){
 					CVector3D v(vector.get_begin(), intersection);
@@ -312,8 +317,8 @@ bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
 }
 
 CKDTreeCPU::CKDTreeCPU(std::vector<IObject3D*>& objects) {
-	m_bounding_box = CVoxel(objects);
-	m_root->build(objects, m_bounding_box, 0);
+	m_bounding_box = CVoxel(objects.begin(), objects.end());
+	m_root->build(objects.begin(), objects.end(), m_bounding_box, 0);
 }
 
 bool CKDTreeCPU::find_intersection(const CVector3D& vector, IObject3D* nearest_object, CPoint3D& nearest_intersect) {
