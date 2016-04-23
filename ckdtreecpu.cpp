@@ -472,6 +472,7 @@ bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
  */
 CKDTreeCPU::CKDTreeCPU(std::vector<IObject3D*>& objects) {
 	m_bounding_box = CVoxel(objects.begin(), objects.end());
+	m_root = new CKDNode();
 	m_root->build(objects.begin(), objects.end(), m_bounding_box, 0);
 }
 
@@ -489,4 +490,8 @@ CKDTreeCPU::CKDTreeCPU(std::vector<IObject3D*>& objects) {
 bool CKDTreeCPU::find_intersection(const CVector3D& vector, IObject3D* nearest_object, CPoint3D& nearest_intersect) {
 	return (m_bounding_box.intersects_with_vector(vector)
 			&& m_root->find_intersection(m_bounding_box, vector, nearest_object, nearest_intersect));
+}
+
+CKDTreeCPU::~CKDTreeCPU() {
+	delete m_root;
 }
