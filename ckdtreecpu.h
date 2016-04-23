@@ -53,7 +53,7 @@ class CKDNode {
 		CKDNode() : m_plane(EPlane::NONE), m_coordinate(CPoint3D()), m_left(NULL), m_right(NULL) {}
 		CKDNode(EPlane p, const CPoint3D& pnt, CKDNode* l, CKDNode* r) : m_plane(p), m_coordinate(pnt), m_left(l), m_right(r) {}
 		inline CKDNode* build(ObjIterator begin, ObjIterator end, const CVoxel& voxel, int depth);
-		bool find_intersection(const CVoxel& voxel, const CVector3D& vector, IObject3D* nearest_object, CPoint3D& nearest_intersect);
+		bool find_intersection(const CVoxel& voxel, const CVector3D& vector, IObject3D*& nearest_object, CPoint3D& nearest_intersect);
 		inline void set_begin(ObjIterator b);
 		inline void set_end(ObjIterator e);
 };
@@ -65,6 +65,7 @@ class CKDTreeCPU : public IKDTree {
 	public:
 		CKDTreeCPU() = delete;
 		CKDTreeCPU(std::vector<IObject3D*>& obj);
-		virtual bool find_intersection(const CVector3D& vector, IObject3D* nearest_object, CPoint3D& nearest_intersect);
+		virtual bool find_intersection(const CVector3D& vector, IObject3D*& nearest_object, CPoint3D& nearest_intersect);
+		~CKDTreeCPU();
 };
 #endif //CKDTREECPU_H
