@@ -40,7 +40,8 @@ int main(int argc, char** argv) {
 		exit(0);
 	}
 
-	std::time_t cur_time = std::time(NULL);
+	std::chrono::steady_clock::time_point t1;
+	if(testing) t1 = std::chrono::steady_clock::now();
 
 	CScene scene(width, height);
 	CCustomParser parser;
@@ -48,9 +49,10 @@ int main(int argc, char** argv) {
 	scene.render(gpu_process, testing);
 
 	if(testing) {
-		cur_time = std::time(NULL) - cur_time;
-		double res = cur_time / CLOCKS_PER_SEC;
-		std::cout << "All working time: " << res << "s" << std::endl;
+		std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+		std::cout << "All working time: " << time_span.count() << "s" << std::endl;
 	}
+
 	return 0;
 }

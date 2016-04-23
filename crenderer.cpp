@@ -38,16 +38,15 @@ void CRenderer::FindRotMatrix() {
 }
 
 void CRenderer::render(bool testing) {
+	std::chrono::steady_clock::time_point t1;
 	FindRotMatrix();
 	//SDL_Event event;
-
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_CreateWindowAndRenderer(m_width, m_height, 0, &window, &renderer);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_RenderClear(renderer);
 
-	std::time_t cur_time = std::time(NULL);
-
+	if(testing) t1 = std::chrono::steady_clock::now();
 	for(int x = 0; x < m_width; ++x) {
 		for(int y = 0; y < m_height; ++y) {
 			IObject3D* obj = NULL;
@@ -65,9 +64,9 @@ void CRenderer::render(bool testing) {
 	SDL_RenderPresent(renderer);
 
 	if(testing) {
-		cur_time = std::time(NULL) - cur_time;
-		double res = cur_time / CLOCKS_PER_SEC;
-		std::cout << "Rendering cycle working time: " << res << "s" << std::endl;
+		std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+		std::cout << "Rendering cycle working time: " << time_span.count() << "s" << std::endl;
 	}
 
 	/*while(1) {
