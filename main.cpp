@@ -40,10 +40,17 @@ int main(int argc, char** argv) {
 		exit(0);
 	}
 
+	std::time_t cur_time = std::time(NULL);
+
 	CScene scene(width, height);
 	CCustomParser parser;
 	scene.load_file(&parser, filename);
 	scene.render(gpu_process, testing);
 
+	if(testing) {
+		cur_time = std::time(NULL) - cur_time;
+		cur_time /= CLOCKS_PER_SEC;
+		std::cout << "All working time: " << cur_time << "s" << std::endl;
+	}
 	return 0;
 }
