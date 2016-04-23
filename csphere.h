@@ -1,3 +1,5 @@
+#ifndef CSPHERE_H
+#define CSPHERE_H
 #include "iobject3d.h"
 
 class CSphere : public IObject3D {
@@ -30,3 +32,4 @@ class CSphere : public IObject3D {
 			m_color = sphere.get_color();
 		}
 };
+#endif //CSPHERE_H
