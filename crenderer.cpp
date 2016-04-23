@@ -66,8 +66,8 @@ void CRenderer::render(bool testing) {
 
 	if(testing) {
 		cur_time = std::time(NULL) - cur_time;
-		cur_time /= CLOCKS_PER_SEC;
-		std::cout << "Rendering cycle working time: " << cur_time << "s" << std::endl;
+		double res = cur_time / CLOCKS_PER_SEC;
+		std::cout << "Rendering cycle working time: " << res << "s" << std::endl;
 	}
 
 	/*while(1) {
