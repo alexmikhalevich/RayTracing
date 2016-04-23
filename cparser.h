@@ -1,6 +1,7 @@
 #ifndef CPARSER_H
 #define CPARSER_H
 #include <fstream>
+#include <sstream>
 #include "iparser.h"
 #include "csphere.h"
 #include "ccamera.hpp"
