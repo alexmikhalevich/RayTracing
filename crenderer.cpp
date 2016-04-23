@@ -19,9 +19,9 @@ CVector3D CRenderer::GetRay(const CPoint3D& screen_point) {
 void CRenderer::FindRotMatrix() {
 	CVector3D cam_basis_x = m_camera.get_view();
 	cam_basis_x.normalize();
-	CVector3D cam_basis_y(CPoint3D(0, 0, 0), CPoint3D(-cam_basis_x.get_coordinates().get_y() / cam_basis_x.get_coordinates().get_x(), 1, 0));
+	CVector3D cam_basis_y(CPoint3D(0, 0, 0), CPoint3D(-1 * cam_basis_x.get_coordinates().get_y() / cam_basis_x.get_coordinates().get_x(), 1, 0));
 	cam_basis_y.normalize();
-	CVector3D cam_basis_z(CPoint3D(0, 0, 0), CPoint3D(-cam_basis_x.get_coordinates().get_z() / cam_basis_x.get_coordinates().get_x(), 0, 1));
+	CVector3D cam_basis_z(CPoint3D(0, 0, 0), CPoint3D(-1 * cam_basis_x.get_coordinates().get_z() / cam_basis_x.get_coordinates().get_x(), 0, 1));
 	cam_basis_z.normalize();
 	double cx_x = cam_basis_x.get_coordinates().get_x();
 	double cx_y = cam_basis_x.get_coordinates().get_y();
@@ -49,17 +49,18 @@ void CRenderer::render() {
 		for(int y = 0; y < m_height; ++y) {
 			IObject3D* obj = NULL;
 			CPoint3D intersection;
-			if(m_tree->find_intersection(GetRay(CPoint3D(x, y, 0)), obj, intersection)) {
+			CVector3D vect = GetRay(CPoint3D(x, y, 0));
+			if(m_tree->find_intersection(vect, obj, intersection)) {
 				CColor c = obj->get_intersection_color(intersection);
 				SDL_SetRenderDrawColor(renderer, c.get_red(), c.get_green(), c.get_blue(), 0); 
 			}
 			else 
 				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); 
 			SDL_RenderDrawPoint(renderer, x, y);
-			SDL_RenderPresent(renderer);
-			while(1) {
-				if(SDL_PollEvent(&event) && event.type == SDL_QUIT) break;
-			}
 		}
+	}
+	SDL_RenderPresent(renderer);
+	while(1) {
+		if(SDL_PollEvent(&event) && event.type == SDL_QUIT) break;
 	}
 }
