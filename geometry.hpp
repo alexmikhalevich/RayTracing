@@ -93,6 +93,7 @@ class CVector3D {
 		inline void normalize() {
 			double length = m_begin.get_distance(m_end); 
 			m_coordinates /= length;
+			m_end = m_begin + m_coordinates;
 		}
 		inline double length() const {
 			return std::sqrt(m_coordinates.get_x() * m_coordinates.get_x() 
@@ -178,7 +179,7 @@ class CMatrix3D {
 		}
 		CVector3D operator*(const CVector3D& vector) {
 			CVector3D res;
-			res.set_begin(CPoint3D(0, 0, 0));
+			res.set_begin(vector.get_begin());
 			res.set_end(CPoint3D(m_matrix[0][0] * vector.get_coordinates().get_x()
 					+ m_matrix[0][1] * vector.get_coordinates().get_y() 
 					+ m_matrix[0][2] * vector.get_coordinates().get_z(),
@@ -187,7 +188,8 @@ class CMatrix3D {
 					+ m_matrix[1][2] * vector.get_coordinates().get_z(),
 					m_matrix[2][0] * vector.get_coordinates().get_x()
 					+ m_matrix[2][1] * vector.get_coordinates().get_y() 
-					+ m_matrix[2][2] * vector.get_coordinates().get_z()));
+					+ m_matrix[2][2] * vector.get_coordinates().get_z())
+					+ vector.get_begin());
 			return res;
 		}
 };
