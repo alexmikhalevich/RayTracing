@@ -19,9 +19,9 @@ CVector3D CRenderer::GetRay(const CPoint3D& screen_point) {
 void CRenderer::FindRotMatrix() {
 	CVector3D cam_basis_x = m_camera.get_view();
 	cam_basis_x.normalize();
-	CVector3D cam_basis_y(CPoint3D(0, 0, 0), CPoint3D(-1 * cam_basis_x.get_coordinates().get_y() / cam_basis_x.get_coordinates().get_x(), 1, 0));
+	CVector3D cam_basis_y(CPoint3D(0, 0, 0), CPoint3D(-cam_basis_x.get_coordinates().get_y() / cam_basis_x.get_coordinates().get_x(), 1, 0));
 	cam_basis_y.normalize();
-	CVector3D cam_basis_z(CPoint3D(0, 0, 0), CPoint3D(-1 * cam_basis_x.get_coordinates().get_z() / cam_basis_x.get_coordinates().get_x(), 0, 1));
+	CVector3D cam_basis_z(CPoint3D(0, 0, 0), CPoint3D(-cam_basis_x.get_coordinates().get_z() / cam_basis_x.get_coordinates().get_x(), 0, 1));
 	cam_basis_z.normalize();
 	double cx_x = cam_basis_x.get_coordinates().get_x();
 	double cx_y = cam_basis_x.get_coordinates().get_y();
@@ -37,14 +37,17 @@ void CRenderer::FindRotMatrix() {
 	m_rot_matrix = rot_matrix;
 }
 
-void CRenderer::render() {
+void CRenderer::render(bool testing) {
 	FindRotMatrix();
-	SDL_Event event;
+	//SDL_Event event;
 
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_CreateWindowAndRenderer(m_width, m_height, 0, &window, &renderer);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_RenderClear(renderer);
+
+	std::time_t cur_time = std::time(NULL);
+
 	for(int x = 0; x < m_width; ++x) {
 		for(int y = 0; y < m_height; ++y) {
 			IObject3D* obj = NULL;
@@ -60,7 +63,14 @@ void CRenderer::render() {
 		}
 	}
 	SDL_RenderPresent(renderer);
-	while(1) {
-		if(SDL_PollEvent(&event) && event.type == SDL_QUIT) break;
+
+	if(testing) {
+		cur_time = std::time(NULL) - cur_time;
+		cur_time /= CLOCKS_PER_SEC;
+		std::cout << "Rendering cycle working time: " << cur_time << "s" << std::endl;
 	}
+
+	/*while(1) {
+		if(SDL_PollEvent(&event) && event.type == SDL_QUIT) break;
+	}*/
 }

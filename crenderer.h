@@ -1,6 +1,8 @@
 #ifndef CRENDERER_H
 #define CRENDERER_H
 #include <SDL2/SDL.h>
+#include <chrono>
+#include <ctime>
 #include "ikdtree.h"
 #include "ccamera.hpp"
 
@@ -21,6 +23,6 @@ class CRenderer {
 		CRenderer() = delete;
 		CRenderer(const CCamera& c, IKDTree* t, int w = -1, int h = -1) : m_camera(c), m_tree(t), m_width(w), m_height(h) {}
 		~CRenderer();
-		void render();
+		void render(bool testing);
 };
 #endif //CRENDERER_H

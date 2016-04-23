@@ -10,7 +10,7 @@ void CScene::render(bool gpu_process, bool testing) {
 	if(!gpu_process) {
 		CKDTreeCPU kdtree(m_objects);
 		CRenderer renderer(m_camera, &kdtree, m_width, m_height);
-		renderer.render();
+		renderer.render(testing);
 	}
 }
 
