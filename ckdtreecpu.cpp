@@ -378,7 +378,7 @@ bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
 				IObject3D* obj = *iter;
 				if(obj->intersect(vector, intersection) 
 						&& voxel.contains_point(intersection)) {
-					CVector3D v(vector.get_begin(), intersection); //TODO: fucking magic
+					CVector3D v(vector.get_begin(), intersection);
 					cur_dist = v.length();
 					if((min_dist - cur_dist < EPS && min_dist - cur_dist > 0) 
 							|| (min_dist < 0)) {
