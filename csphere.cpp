@@ -19,8 +19,9 @@ bool CSphere::intersect(const CVector3D& ray_vector, CPoint3D& intersection) {
 	const double d = b * b - 4 * a * c;
 	
 	if(d < 0) return false;
-	const double t_1 = (-b + std::sqrt(d)) / (2 * a);
-	const double t_2 = (-b - std::sqrt(d)) / (2 * a);
+	double sqrt_d = std::sqrt(d);
+	const double t_1 = (-b + sqrt_d) / (2 * a);
+	const double t_2 = (-b - sqrt_d) / (2 * a);
 	const double min_t = std::min(t_1, t_2);
 	const double max_t = std::max(t_1, t_2);
 	const double t = (min_t > EPS) ? min_t : max_t;
