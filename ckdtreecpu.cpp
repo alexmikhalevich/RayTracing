@@ -13,14 +13,25 @@
  * begin - the iterator to the beginning of the array, which contains scene objects;
  * end - the iterator to the ending of the array, which contains scene objects.
  */
-CVoxel::CVoxel(const ObjIterator& begin, const ObjIterator& end) {
+CVoxel::CVoxel(ObjIterator begin, ObjIterator end) {
 	if(begin == end) {
 		m_bottom = CPoint3D(-1.0, -1.0, -1.0);
 		m_top = CPoint3D(1.0, 1.0, 1.0);
 	}
 
+	IObject3D* obj = *(begin);
+	CPoint3D tmin_p = obj->get_min_boundary_point();
+	CPoint3D tmax_p = obj->get_max_boundary_point();
+	
+	m_bottom.set_x(tmin_p.get_x()); 
+	m_bottom.set_y(tmin_p.get_y()); 
+	m_bottom.set_z(tmin_p.get_z()); 
+	m_top.set_x(tmax_p.get_x()); 
+	m_top.set_y(tmax_p.get_y()); 
+	m_top.set_z(tmax_p.get_z()); 
+
 	for(ObjIterator iter = begin; iter != end; ++iter) {
-		IObject3D* obj = *iter;
+		obj = *iter;
 		CPoint3D tmin_p = obj->get_min_boundary_point();
 		CPoint3D tmax_p = obj->get_max_boundary_point();
 
@@ -101,7 +112,7 @@ inline bool CVoxel::contains(IObject3D* object) const {
  * Returns value:
  * the number of objects, which the current voxel contains.
  */
-inline int CVoxel::contained_elements(const ObjIterator& begin, const ObjIterator& end) const {
+inline int CVoxel::contained_elements(ObjIterator begin, ObjIterator end) const {
 	int result = 0;
 	for(ObjIterator iter = begin; iter != end; ++iter)
 		if(contains(*iter)) ++result;
@@ -173,7 +184,7 @@ inline bool CVoxel::intersects_with_vector(const CVector3D& vector) const {
  * Returns value:
  * the number of elements, contained by the current voxel.
  */
-inline int CVoxel::sort_and_count_contained(const ObjIterator& begin, const ObjIterator& end) const {
+inline int CVoxel::sort_and_count_contained(ObjIterator begin, ObjIterator end) const {
 	ObjIterator b = begin;
 	ObjIterator e = end;
 
@@ -295,7 +306,7 @@ inline void CKDNode::FindPlane(const CVoxel& voxel, int depth, EPlane& plane, CP
  * Returns value:
  * a pointer to the constructed node.
  */
-inline CKDNode* CKDNode::build(const ObjIterator& begin, const ObjIterator& end, const CVoxel& voxel, int depth) {
+inline CKDNode* CKDNode::build(ObjIterator begin, ObjIterator end, const CVoxel& voxel, int depth) {
 	EPlane plane;
 	CPoint3D plane_coord;
 	FindPlane(voxel, depth, plane, plane_coord);
@@ -308,7 +319,7 @@ inline CKDNode* CKDNode::build(const ObjIterator& begin, const ObjIterator& end,
 	voxel.split(plane, plane_coord, left_vox, right_vox);
 	int left_elements = left_vox.sort_and_count_contained(begin, end);
 	//int right_elements = right_vox.sort_and_count_contained(begin, end);
-	CKDNode* left_node = build(begin, begin + left_elements, left_vox, depth + 1);
+	CKDNode* left_node = build(begin, begin + left_elements + 1, left_vox, depth + 1);
 	CKDNode* right_node = build(begin + left_elements + 1, end, right_vox, depth + 1);
 	CKDNode* node = new CKDNode(plane, plane_coord, left_node, right_node); 
 
@@ -323,13 +334,24 @@ inline CKDNode* CKDNode::build(const ObjIterator& begin, const ObjIterator& end,
  * Returns value:
  * a pointer to the constructed leaf.
  */
-inline CKDNode* CKDNode::MakeLeaf(const ObjIterator& begin, const ObjIterator& end) {
+inline CKDNode* CKDNode::MakeLeaf(ObjIterator begin, ObjIterator end) {
 	CKDNode* node = new CKDNode();
-	if(end - begin) {
-		m_begin = begin;
-		m_end = end;
+	if(begin != end) {
+		node->set_begin(begin);
+		node->set_end(end);
 	}
 	return node;
+}
+
+/*
+ * Setters for the begin-end iterators of the current CNode object
+ */
+inline void CKDNode::set_begin(ObjIterator b) {
+	m_begin = b;
+}
+
+inline void CKDNode::set_end(ObjIterator e) {
+	m_end = e;
 }
 
 /*
