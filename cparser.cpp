@@ -3,8 +3,7 @@
 void CCustomParser::parse(const std::string& filename) {
 	std::ifstream in(filename);
 	std::string s;
-	while(!in.eof()) {
-		std::getline(in, s);
+	while(std::getline(in, s)) {
 		std::istringstream s_stream(s);
 		std::string cur_s;
 		s_stream >> cur_s;
@@ -23,8 +22,7 @@ void CCustomParser::parse(const std::string& filename) {
 		}
 		else {
 			std::cerr << "[EE]: Parsing error." << std::endl;
-			return;
-		
+			exit(-1);	
 		}
 	}
 }
