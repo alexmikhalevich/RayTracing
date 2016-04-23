@@ -1,3 +1,5 @@
+#ifndef GEOMETRY_HPP
+#define GEOMETRY_HPP
 #include <cmath>
 #include <algorithm>
 #include <iostream>
@@ -65,6 +67,7 @@ class CPoint3D {
 			m_z -= a;
 		}
 };
+
 
 class CVector3D {
 	private:
@@ -141,6 +144,54 @@ class CVector3D {
 		}
 };
 
+class CMatrix3D {
+	private:
+		std::vector<std::vector<double>> m_matrix;
+	public:
+		CMatrix3D() : m_matrix{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}} {}
+		CMatrix3D(double ax, double bx, double cx, double ay, double by, double cy, double az, double bz, double cz) 
+			: m_matrix{ {ax, bx, cx}, {ay, by, cy}, {az, bz, cz} } {}
+		void transpose() {
+			for(size_t i = 0; i < 3; ++i)
+				for(size_t j = 0; j < 3; ++j)
+					m_matrix[j][i] = m_matrix[i][j];
+		}
+		double det() const {
+			return m_matrix[0][0] * (m_matrix[1][1] * m_matrix[2][2] - m_matrix[1][2] * m_matrix[2][1]) 
+				- m_matrix[0][1] * (m_matrix[1][0] * m_matrix[2][2] - m_matrix[1][2] * m_matrix[2][0]) 
+				+ m_matrix[0][2] * (m_matrix[1][0] * m_matrix[2][1] - m_matrix[1][1] * m_matrix[2][0]);
+		}
+		void inverse() {
+			double d = det();
+			transpose();
+			for(size_t i = 0; i < 3; ++i)
+				for(size_t j = 0; j < 3; ++j)
+					m_matrix[i][j] /= d;
+		}
+		double get(size_t i, size_t j) const {
+			return m_matrix[i][j];
+		}
+		void operator /=(double c) {
+			for(size_t i = 0; i < 3; ++i)
+				for(size_t j = 0; j < 3; ++j)
+					m_matrix[i][j] /= c;
+		}
+		CVector3D operator*(const CVector3D& vector) {
+			CVector3D res;
+			res.set_begin(CPoint3D(0, 0, 0));
+			res.set_end(CPoint3D(m_matrix[0][0] * vector.get_coordinates().get_x()
+					+ m_matrix[0][1] * vector.get_coordinates().get_y() 
+					+ m_matrix[0][2] * vector.get_coordinates().get_z(),
+					m_matrix[1][0] * vector.get_coordinates().get_x()
+					+ m_matrix[1][1] * vector.get_coordinates().get_y() 
+					+ m_matrix[1][2] * vector.get_coordinates().get_z(),
+					m_matrix[2][0] * vector.get_coordinates().get_x()
+					+ m_matrix[2][1] * vector.get_coordinates().get_y() 
+					+ m_matrix[2][2] * vector.get_coordinates().get_z()));
+			return res;
+		}
+};
+
 class CColor {
 	private:
 		unsigned short m_red;
@@ -161,4 +212,4 @@ class CColor {
 			m_blue = color.get_blue();
 		}
 };
-
+#endif //GEOMETRY_HPP
