@@ -309,6 +309,8 @@ inline void CKDNode::FindPlane(const CVoxel& voxel, int depth, EPlane& plane, CP
 inline CKDNode* CKDNode::build(ObjIterator begin, ObjIterator end, const CVoxel& voxel, int depth) {
 	EPlane plane;
 	CPoint3D plane_coord;
+	m_begin = begin;
+	m_end = end;
 	FindPlane(voxel, depth, plane, plane_coord);
 	
 	if(plane == EPlane::NONE)
@@ -369,7 +371,7 @@ inline void CKDNode::set_end(ObjIterator e) {
 bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
 		IObject3D* nearest_object, CPoint3D& nearest_intersect) {
 	if(m_plane == EPlane::NONE) {
-		if(m_end - m_begin) {
+		if(m_begin != m_end) {
 			CPoint3D intersection;
 			double min_dist = -1.0, cur_dist;
 			for(ObjIterator iter = m_begin; iter != m_end; ++iter) {
