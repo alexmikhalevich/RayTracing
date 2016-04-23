@@ -4,9 +4,6 @@ void CScene::load_file(IParser* parser, const std::string& filename) {
 	parser->parse(filename);
 	m_objects = parser->get_objects();
 	m_camera = parser->get_camera();
-	/*for(IObject3D* obj : res) {
-		m_objects.push_back(obj);
-	}*/
 }
 
 void CScene::render(bool gpu_process, bool testing) {
