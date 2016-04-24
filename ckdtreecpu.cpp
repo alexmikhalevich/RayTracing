@@ -71,9 +71,11 @@ inline void CVoxel::split(EPlane plane, const CPoint3D& plane_coord, CVoxel& lef
 		case EPlane::XZ:
 			left_top.set_y(plane_coord.get_y());
 			right_bottom.set_y(plane_coord.get_y());
+			break;
 		case EPlane::YZ:
 			left_top.set_x(plane_coord.get_x());
 			right_bottom.set_x(plane_coord.get_x());
+			break;
 		case EPlane::NONE:
 			std::cerr << "[EE]: Unable to split voxel: no line provided." << std::endl;
 			exit(1);
