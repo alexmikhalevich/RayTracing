@@ -11,12 +11,13 @@ bool CSphere::intersect(const CVector3D& ray_vector, CPoint3D& intersection) {
 	const double c_y = m_center.get_y();
 	const double c_z = m_center.get_z();
 
+
 	const double a = v_x * v_x + v_y * v_y + v_z * v_z;
 	const double b = 2 * (v_x * (b_x - c_x) + v_y * (b_y - c_y) + v_z * (b_z - c_z));
 	const double c = c_x * c_x + c_y * c_y + c_z * c_z 
 		+ b_x * b_x + b_y * b_y + b_z * b_z 
 		- 2 * (b_x * c_x + b_y * c_y + b_z * c_z) - m_radius * m_radius;
-	const double d = b * b - 4 * a * c;
+	const double d = b * b - 4 * c;
 	
 	if(d < 0) return false;
 	double sqrt_d = std::sqrt(d);
