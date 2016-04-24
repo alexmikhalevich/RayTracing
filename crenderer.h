@@ -2,11 +2,10 @@
 #define CRENDERER_H
 #include <SDL2/SDL.h>
 #include <chrono>
-#include <iomanip>
 #include "ikdtree.h"
 #include "ccamera.hpp"
 
-const double PROJ_PLANE_DIST = 10.0;
+const double PROJ_PLANE_DIST = 1;
 
 class CRenderer {
 	private:

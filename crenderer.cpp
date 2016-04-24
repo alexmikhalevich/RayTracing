@@ -8,7 +8,9 @@ CRenderer::~CRenderer() {
 
 CVector3D CRenderer::GetRay(const CPoint3D& screen_point) {
 	CPoint3D plane_point;
-	plane_point.set_x(PROJ_PLANE_DIST);
+
+	//FIXME: x-coordinate is set incorrectly: plane is located behind the camera
+	plane_point.set_x(PROJ_PLANE_DIST + m_camera.get_position().get_x());
 	plane_point.set_y(screen_point.get_x() - m_width / 2);
 	plane_point.set_z(m_height / 2 - screen_point.get_y());
 
