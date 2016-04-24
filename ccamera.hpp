@@ -2,8 +2,6 @@
 #define CCAMERA_HPP
 #include "geometry.hpp"
 
-const double VIEW_ANGLE = 3.1415;
-
 class CCamera {
 	private:
 		CPoint3D m_position;
