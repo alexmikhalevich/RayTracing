@@ -49,7 +49,6 @@ void CRenderer::render(bool testing) {
 	SDL_RenderClear(renderer);
 
 	if(testing) t1 = std::chrono::steady_clock::now();
-
 	for(int x = 0; x < m_width; ++x) {
 		for(int y = 0; y < m_height; ++y) {
 			IObject3D* obj = NULL;
