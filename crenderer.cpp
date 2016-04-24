@@ -10,7 +10,7 @@ CVector3D CRenderer::GetRay(const CPoint3D& screen_point) {
 	CPoint3D plane_point;
 	plane_point.set_x(PROJ_PLANE_DIST);
 	plane_point.set_y(screen_point.get_x() - m_width / 2);
-	plane_point.set_z(screen_point.get_y() + m_height / 2);
+	plane_point.set_z(m_height / 2 - screen_point.get_y());
 
 	CVector3D ray_vector(m_camera.get_position(), plane_point);
 	return m_rot_matrix * ray_vector;
@@ -40,13 +40,14 @@ void CRenderer::FindRotMatrix() {
 void CRenderer::render(bool testing) {
 	std::chrono::steady_clock::time_point t1;
 	FindRotMatrix();
-	//SDL_Event event;
+	SDL_Event event;
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_CreateWindowAndRenderer(m_width, m_height, 0, &window, &renderer);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_RenderClear(renderer);
 
 	if(testing) t1 = std::chrono::steady_clock::now();
+
 	for(int x = 0; x < m_width; ++x) {
 		for(int y = 0; y < m_height; ++y) {
 			IObject3D* obj = NULL;
@@ -69,7 +70,7 @@ void CRenderer::render(bool testing) {
 		std::cout << "Rendering cycle working time: " << time_span.count() << "s" << std::endl;
 	}
 
-	/*while(1) {
+	while(1) {
 		if(SDL_PollEvent(&event) && event.type == SDL_QUIT) break;
-	}*/
+	}	
 }
