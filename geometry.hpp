@@ -155,7 +155,7 @@ class CMatrix3D {
 		void transpose() {
 			for(size_t i = 0; i < 3; ++i)
 				for(size_t j = 0; j < 3; ++j)
-					m_matrix[j][i] = m_matrix[i][j];
+					std::swap(m_matrix[j][i], m_matrix[i][j]);
 		}
 		double det() const {
 			return m_matrix[0][0] * (m_matrix[1][1] * m_matrix[2][2] - m_matrix[1][2] * m_matrix[2][1]) 
