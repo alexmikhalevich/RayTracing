@@ -2,15 +2,12 @@
 #define CLIGHTER_HPP
 #include "geometry.hpp"
 
-const double SHADOW_INTENSITY = 0.1;
-
 class CLighter {
 	private:
 		CPoint3D m_position;
 		double m_intensity;
 	public:
 		CLighter(const CPoint3D& p, double i = 1) : m_position(p), m_intensity(i) {
-			if(m_intensity > 1) m_intensity = 1;
 			if(m_intensity < 0) m_intensity = 0;
 		}
 
