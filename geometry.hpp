@@ -201,7 +201,14 @@ class CColor {
 		unsigned short m_blue;
 	public:
 		CColor() : m_red(0), m_green(0), m_blue(0) {}
-		CColor(unsigned short red, unsigned short green, unsigned short blue) : m_red(red), m_green(green), m_blue(blue) {}
+		CColor(unsigned short red, unsigned short green, unsigned short blue) : m_red(red), m_green(green), m_blue(blue) {
+			if(m_red > 255) m_red = 255;
+			if(m_green > 255) m_green = 255;
+			if(m_blue > 255) m_blue = 255;
+			if(m_red < 0) m_red = 0;
+			if(m_green < 0) m_green = 0;
+			if(m_blue < 0) m_blue = 0;
+		}
 		CColor(const CColor& c) : m_red(c.get_red()), m_green(c.get_green()), m_blue(c.get_blue()) {}
 
 		unsigned short get_red() const { return m_red; }
@@ -212,6 +219,47 @@ class CColor {
 			m_red = color.get_red();
 			m_green = color.get_green();
 			m_blue = color.get_blue();
+		}
+		void operator*=(double mult) {
+			m_red = (unsigned short)(m_red * mult);
+			m_green = (unsigned short)(m_green * mult);
+			m_blue = (unsigned short)(m_blue * mult);
+			if(m_red > 255) m_red = 255;
+			if(m_green > 255) m_green = 255;
+			if(m_blue > 255) m_blue = 255;
+			if(m_red < 0) m_red = 0;
+			if(m_green < 0) m_green = 0;
+			if(m_blue < 0) m_blue = 0;
+		}
+		void operator+=(double add) {
+			m_red += (unsigned short)add;
+			m_green += (unsigned short)add;
+			m_blue += (unsigned short)add;
+			if(m_red > 255) m_red = 255;
+			if(m_green > 255) m_green = 255;
+			if(m_blue > 255) m_blue = 255;
+			if(m_red < 0) m_red = 0;
+			if(m_green < 0) m_green = 0;
+			if(m_blue < 0) m_blue = 0;
+		}
+		void operator+=(const CColor& add) {
+			m_red += add.get_red();
+			m_green += add.get_green();
+			m_blue += add.get_blue();
+			if(m_red > 255) m_red = 255;
+			if(m_green > 255) m_green = 255;
+			if(m_blue > 255) m_blue = 255;
+			if(m_red < 0) m_red = 0;
+			if(m_green < 0) m_green = 0;
+			if(m_blue < 0) m_blue = 0;
+		}
+		CColor operator+(const CColor& add) {
+			CColor result(m_red + add.get_red(), m_green + add.get_blue(), m_blue + add.get_green());
+			return result;
+		}
+		CColor operator*(double mult) {
+			CColor result(m_red * mult, m_green * mult, m_blue * mult);
+			return result;
 		}
 };
 #endif //GEOMETRY_HPP
