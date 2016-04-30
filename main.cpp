@@ -8,17 +8,18 @@ int main(int argc, char** argv) {
 	bool testing = false;
 	int width = 800;
 	int height = 800;
+	double backlight = 0.0;
 	std::string filename = "";
 
 	if(argc > 1) {
 		for(int i = 0; i < argc; ++i) {
 			if(strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gpu") == 0)
 				gpu_process = true;
-			else if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--height") == 0) {
+			else if((strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--height") == 0) && argc < i + 1) {
 				height = atoi(argv[i + 1]);
 				++i;
 			}
-			else if(strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--width") == 0) {
+			else if((strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--width") == 0) && argc < i + 1) {
 				height = atoi(argv[i + 1]);
 				++i;
 			}
@@ -27,8 +28,14 @@ int main(int argc, char** argv) {
 			}				
 			else if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--enable-testing") == 0)
 				testing = true;
-			else if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) {
+			else if((strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) && argc < i + 1) {
 				filename = std::string(argv[i + 1]);
+				++i;
+			}
+			else if(strcmp(argv[i], "--backlight") == 0 && argc < i + 1) {
+				backlight = atof(argv[i + 1]);
+				if(backlight > 1.0) backlight = 1.0;
+				if(backlight < 0.0) backlight = 0.0;
 				++i;
 			}
 
@@ -46,7 +53,7 @@ int main(int argc, char** argv) {
 	CScene scene(width, height);
 	CCustomParser parser;
 	scene.load_file(&parser, filename);
-	scene.render(gpu_process, testing);
+	scene.render(backlight, gpu_process, testing);
 
 	if(testing) {
 		std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();

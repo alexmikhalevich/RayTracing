@@ -22,6 +22,6 @@ class CScene {
 		CScene(const CScene& s) = delete;
 		void load_file(IParser* parser, const std::string& filename);
 		void load_object(IObject3D* object);
-		void render(bool gpu_process, bool testing);
+		void render(double backlight, bool gpu_process, bool testing);
 };
 #endif //CSCENE_H
