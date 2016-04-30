@@ -35,6 +35,7 @@ int main(int argc, char** argv) {
 			else if(strcmp(argv[i], "--backlight") == 0 && argc > i + 1) {
 				backlight = atof(argv[i + 1]);
 				if(backlight < 0) backlight = 0;
+				if(backlight > 100) backlight = 100;
 				++i;
 			}
 

@@ -9,6 +9,7 @@ class CLighter {
 	public:
 		CLighter(const CPoint3D& p, double i = 1) : m_position(p), m_intensity(i) {
 			if(m_intensity < 0) m_intensity = 0;
+			if(m_intensity > 100) m_intensity = 100;
 		}
 
 		double get_intensity(const CPoint3D& p) const { 
