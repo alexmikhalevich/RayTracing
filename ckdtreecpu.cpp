@@ -378,8 +378,9 @@ bool CKDNode::find_intersection(const CVoxel& voxel, const CVector3D& vector,
 			double min_dist = -1.0, cur_dist;
 			for(ObjIterator iter = m_begin; iter != m_end; ++iter) {
 				IObject3D* obj = *iter;
-				if(obj->intersect(vector, intersection) 
-						&& voxel.contains_point(intersection)) {
+				bool inter = obj->intersect(vector, intersection);
+				bool cont = voxel.contains_point(intersection);
+				if(inter && cont) {
 					CVector3D v(vector.get_begin(), intersection);
 					cur_dist = v.length();
 					if((min_dist - cur_dist < EPS && min_dist - cur_dist > 0) 
@@ -492,8 +493,11 @@ CKDTreeCPU::CKDTreeCPU(std::vector<IObject3D*>& objects) {
  * if the intersection exists - returns true, otherwise false.
  */
 bool CKDTreeCPU::find_intersection(const CVector3D& vector, IObject3D*& nearest_object, CPoint3D& nearest_intersect) {
-	return (m_bounding_box.intersects_with_vector(vector)
-			&& m_root->find_intersection(m_bounding_box, vector, nearest_object, nearest_intersect));
+	bool has_bd_intersection = m_bounding_box.intersects_with_vector(vector);
+	bool has_real_intersection = false;
+	if(has_bd_intersection)
+		has_real_intersection = m_root->find_intersection(m_bounding_box, vector, nearest_object, nearest_intersect); 
+	return has_real_intersection;
 }
 
 CKDTreeCPU::~CKDTreeCPU() {
