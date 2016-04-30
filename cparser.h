@@ -12,6 +12,7 @@ class CCustomParser : public IParser {
 		std::vector<IObject3D*> m_objects;
 		CCamera m_camera;
 		std::vector<CLighter> m_lighters;
+		double m_backlight;
 	public:
 		CCustomParser() : m_camera(CCamera(CPoint3D(0, 0, 0), CPoint3D(1, 0, 0))) {}
 		virtual void parse(const std::string& filename);
