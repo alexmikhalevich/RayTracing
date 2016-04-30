@@ -8,10 +8,12 @@
 #include "ckdtreecpu.h"
 #include "ccamera.hpp"
 #include "iparser.h"
+#include "clighter.hpp"
 
 class CScene {
 	private:
 		std::vector<IObject3D*> m_objects;
+		std::vector<CLighter> m_lighters;
 		CCamera m_camera;
 		int m_width;
 		int m_height;
