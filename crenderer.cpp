@@ -53,11 +53,11 @@ inline CColor CRenderer::RayTracing(double backlight, const std::vector<CLighter
 	else return background;
 }
 
-void CRenderer::render(double backlight, const std::vector<CLighter>& lighters, bool testing) {
+void CRenderer::render(double backlight, const std::vector<CLighter>& lighters, bool testing, bool fullscreen) {
 	std::chrono::steady_clock::time_point t1;
 	SDL_Event event;
-	SDL_Init(SDL_INIT_VIDEO);
 	SDL_CreateWindowAndRenderer(m_width, m_height, 0, &window, &renderer);
+	if(fullscreen) SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_RenderClear(renderer);
 

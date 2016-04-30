@@ -24,6 +24,6 @@ class CRenderer {
 		CRenderer() = delete;
 		CRenderer(const CCamera& c, IKDTree* t, int w = -1, int h = -1) : m_camera(c), m_tree(t), m_width(w), m_height(h) {}
 		~CRenderer();
-		void render(double backlight, const std::vector<CLighter>& lighters, bool testing);
+		void render(double backlight, const std::vector<CLighter>& lighters, bool testing, bool fullscreen);
 };
 #endif //CRENDERER_H

@@ -1,11 +1,13 @@
 #include <iostream>
 #include <string>
+#include <SDL2/SDL.h>
 #include "cscene.h"
 #include "cparser.h"
 
 int main(int argc, char** argv) {
 	bool gpu_process = false;
 	bool testing = false;
+	bool fullscreen = false;
 	int width = 800;
 	int height = 800;
 	double backlight = 0.0;
@@ -24,7 +26,7 @@ int main(int argc, char** argv) {
 				++i;
 			}
 			else if(strcmp(argv[i], "--fullscreen") == 0) {
-				//TODO: fullscreen
+				fullscreen = true;
 			}				
 			else if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--enable-testing") == 0)
 				testing = true;
@@ -47,13 +49,25 @@ int main(int argc, char** argv) {
 		exit(0);
 	}
 
+	SDL_Init(SDL_INIT_VIDEO);
+
+	if(fullscreen) {
+		SDL_DisplayMode mode;;
+		if(SDL_GetCurrentDisplayMode(0, &mode) != 0) {
+			std::cerr << "[EE]: Unable to get display mode." << std::endl;
+			return -1;
+		}
+		width = mode.w;
+		height = mode.h;
+	}
+
 	std::chrono::steady_clock::time_point t1;
 	if(testing) t1 = std::chrono::steady_clock::now();
 
 	CScene scene(width, height);
 	CCustomParser parser;
 	scene.load_file(&parser, filename);
-	scene.render(backlight, gpu_process, testing);
+	scene.render(backlight, gpu_process, testing, fullscreen);
 
 	if(testing) {
 		std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
