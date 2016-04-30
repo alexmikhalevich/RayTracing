@@ -20,6 +20,11 @@ void CCustomParser::parse(const std::string& filename) {
 			s_stream >> p_x >> p_y >> p_z >> v_x >> v_y >> v_z;
 			m_camera = CCamera(CPoint3D(p_x, p_y, p_z), CPoint3D(v_x, v_y, v_z));
 		}
+		else if(cur_s == "lighter") {
+			double i, p_x, p_y, p_z;
+			s_stream >> i >> p_x >> p_y >> p_z;
+			m_lighters.push_back(CLighter(CPoint3D(p_x, p_y, p_z), i));
+		}
 		else {
 			std::cerr << "[EE]: Parsing error." << std::endl;
 			exit(-1);	
@@ -35,3 +40,6 @@ CCamera CCustomParser::get_camera() const {
 	return m_camera;
 }
 
+std::vector<CLighter>& CCustomParser::get_lighters() {
+	return m_lighters;
+}
