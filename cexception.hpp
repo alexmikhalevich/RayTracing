@@ -3,7 +3,6 @@
 class IException {
 	public:
 		virtual void what() const = 0;
-		virtual ~IException() = 0;
 };
 
 class ExEOF : public IException {
