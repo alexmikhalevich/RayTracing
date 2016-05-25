@@ -12,7 +12,9 @@ void CCustomParser::parse(const std::string& filename) {
 			int r, g, b;
 			s_stream >> c_x >> c_y >> c_z >> radius;
 			s_stream >> r >> g >> b;
-			CSphere* sphere = new CSphere(radius, CPoint3D(c_x, c_y, c_z), CColor(r, g, b));
+			CMaterial mat;
+			mat.set_color(CColor(r, g, b));
+			CSphere* sphere = new CSphere(radius, CPoint3D(c_x, c_y, c_z), mat);
 			m_objects.push_back(sphere);	
 		}
 		else if(cur_s == "camera") {
