@@ -33,7 +33,7 @@ bool CSphere::intersect(const CVector3D& ray_vector, CPoint3D& intersection) {
 }
 
 CColor CSphere::get_intersection_color(const CPoint3D& intersection) {
-	return m_color; //TODO: add support for textures
+	return m_material.get_color(); //TODO: add support for textures
 }
 
 CVector3D CSphere::get_normal_vector(const CPoint3D& intersection) {

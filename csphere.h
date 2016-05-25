@@ -1,30 +1,25 @@
 #ifndef CSPHERE_H
 #define CSPHERE_H
 #include "iobject3d.h"
+#include "cmaterial.hpp"
 
 class CSphere : public IObject3D {
 	private:
 		double m_radius;
 		CPoint3D m_center;
-		CColor m_color;
-		double m_reflecting_ability;
+		CMaterial m_material;
 	public:
-		CSphere() : m_radius(1.0), m_center(CPoint3D()), m_color(CColor()), m_reflecting_ability(0.0) {}
-		CSphere(double r, const CPoint3D& c, const CColor& col, double ref = 0.0) : m_radius(r), m_center(c), m_color(col), m_reflecting_ability(ref) {
-			if(m_reflecting_ability < 0.0) m_reflecting_ability = 0.0;
-			if(m_reflecting_ability > 100.0) m_reflecting_ability = 100.0;
-		}
-		CSphere(const CSphere& s) : m_radius(s.get_radius()), m_center(s.get_center()), m_color(s.get_color()), m_reflecting_ability(s.get_reflecting()) {}
+		CSphere() : m_radius(1.0), m_center(CPoint3D()), m_material(CMaterial()) {}
+		CSphere(double r, const CPoint3D& c, const CMaterial& mat) : m_radius(r), m_center(c), m_material(mat) {}
+		CSphere(const CSphere& s) : m_radius(s.get_radius()), m_center(s.get_center()), m_material(s.get_material()) {}
 		~CSphere() {}
 
 		double get_radius() const { return m_radius; }
 		CPoint3D get_center() const { return m_center; }
-		CColor get_color() const { return m_color; }
-		double get_reflecting() const { return m_reflecting_ability; }
+		CMaterial get_material() const { return m_material; }
 		void set_radius(double r) { m_radius = r; }
 		void set_center(const CPoint3D& c) { m_center = c; }
-		void set_color(const CColor& c) { m_color = c; }
-		void set_reflecting(double ref) { m_reflecting_ability = ref; }
+		void set_material(const CMaterial& mat) { m_material = mat; }
 
 		virtual bool intersect(const CVector3D& ray_vector, CPoint3D& intersection);
 		virtual CColor get_intersection_color(const CPoint3D& intersection);
@@ -35,8 +30,7 @@ class CSphere : public IObject3D {
 		void operator=(const CSphere& sphere) {
 			m_radius = sphere.get_radius();
 			m_center = sphere.get_center();
-			m_color = sphere.get_color();
-			m_reflecting_ability = sphere.get_reflecting();
+			m_material = sphere.get_material();
 		}
 };
 #endif //CSPHERE_H
