@@ -149,6 +149,11 @@ class CVector3D {
 			double z = v1.get_coordinates().get_x() * v2.get_coordinates().get_y() - v1.get_coordinates().get_y() * v2.get_coordinates().get_x();
 			return CVector3D(v1.get_end(), v1.get_end() + CPoint3D(x, y, z));
 		}
+		static double dot_product(const CVector3D& v1, const CVector3D& v2) {
+			return v1.get_coordinates().get_x() * v2.get_coordinates().get_x() 
+				+ v1.get_coordinates().get_y() * v2.get_coordinates().get_y()
+				+ v1.get_coordinates().get_z() * v2.get_coordinates().get_z();
+		}
 };
 
 class CMatrix3D {
