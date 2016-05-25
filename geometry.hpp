@@ -154,6 +154,11 @@ class CVector3D {
 				+ v1.get_coordinates().get_y() * v2.get_coordinates().get_y()
 				+ v1.get_coordinates().get_z() * v2.get_coordinates().get_z();
 		}
+		static bool same_clock_dir(const CVector3D& v1, const CVector3D& v2, const CVector3D& normal) {
+			CVector3D n_v1_v2 = v1 * v2;
+			if(dot_product(n_v1_v2, normal) < 0) return false;
+			else return true;
+		}
 };
 
 class CMatrix3D {
