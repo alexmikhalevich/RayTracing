@@ -139,7 +139,7 @@ void CRTParser::ParseLighters(FILE* file) {
 			if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 			while(strcmp(field, "endpoint") != 0) {
 				CLighter lighter(CPoint3D(), 1.0);
-				if(strcmp(field, "coordinates") == 0) {
+				if(strcmp(field, "coords") == 0) {
 					char x[100], y[100], z[100];
 					if(fscanf(file, "%s %s %s", x, y, z) == EOF) throw new ExEOF();
 					lighter.set_position(CPoint3D(atof(x), atof(y), atof(z)));
@@ -211,10 +211,10 @@ void CRTParser::ParseGeometry(FILE* file) {
 					char x[100], y[100], z[100];
 					if(fscanf(file, "%s %s %s", x, y, z) == EOF) throw new ExEOF();
 					vert.push_back(CPoint3D(atof(x), atof(y), atof(z)));
-					++c_t;
-					if(c_t > 2) throw new ExInvalidTriangle();
 					if(check_tri[c_t]) throw new ExInvalidTriangle();
 					check_tri[c_t] = true;
+					++c_t;
+					if(c_t > 3) throw new ExInvalidTriangle();
 				}
 				else if(strcmp(field, "material") == 0) {
 					if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
@@ -238,14 +238,14 @@ void CRTParser::ParseGeometry(FILE* file) {
 			std::vector<CPoint3D> vert;
 			if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 			while(strcmp(field, "endquadrangle") != 0) {
-				if(strcmp(field, "coordinates") == 0) {
+				if(strcmp(field, "vertex") == 0) {
 					char x[100], y[100], z[100];
 					if(fscanf(file, "%s %s %s", x, y, z) == EOF) throw new ExEOF();
 					vert.push_back(CPoint3D(atof(x), atof(y), atof(z)));
-					++c_q;
-					if(c_q > 3) throw new ExInvalidQuadrangle();
 					if(check_quad[c_q]) throw new ExInvalidQuadrangle();
 					check_quad[c_q] = true;
+					++c_q;
+					if(c_q > 4) throw new ExInvalidQuadrangle();
 				}
 				else if(strcmp(field, "material") == 0) {
 					if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
