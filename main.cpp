@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 	if(testing) t1 = std::chrono::steady_clock::now();
 
 	CScene scene(width, height);
-	CCustomParser parser;
+	CRTParser parser;
 	scene.load_file(&parser, filename);
 	scene.render(backlight, gpu_process, testing, fullscreen);
 
