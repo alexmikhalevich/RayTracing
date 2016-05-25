@@ -110,6 +110,7 @@ void CRTParser::ParseViewport(FILE* file) {
 			if(fscanf(file, "%s %s %s", x, y, z) == EOF) throw new ExEOF();
 			topright = CPoint3D(atof(x), atof(y), atof(z));
 		}
+		if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 	}
 	//TODO: unused values: origin, topleft, bottomleft, topright
 }
@@ -157,6 +158,7 @@ void CRTParser::ParseLighters(FILE* file) {
 			check[0] = false;
 			check[1] = false;
 		}
+		if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 	}
 }
 
@@ -263,6 +265,7 @@ void CRTParser::ParseGeometry(FILE* file) {
 			quadrangle->set_vertices(vert);
 			m_objects.push_back(quadrangle);
 		}
+		if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 	}
 }
 void CRTParser::parse(const std::string& filename) {
@@ -273,7 +276,7 @@ void CRTParser::parse(const std::string& filename) {
 	while(fscanf(source, "%s", buffer) != EOF) {
 		if(strcmp(buffer, "viewport") == 0) 
 			ParseViewport(source);
-		else if(strcmp(buffer, "materials")) 
+		else if(strcmp(buffer, "materials") == 0) 
 			ParseMaterials(source);
 		else if(strcmp(buffer, "lights") == 0) 
 			ParseLighters(source);
