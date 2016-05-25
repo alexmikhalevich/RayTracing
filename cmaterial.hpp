@@ -1,3 +1,5 @@
+#ifndef CMATERIAL_H
+#define CMATERIAL_H
 #include "geometry.hpp"
 
 class CMaterial {
@@ -10,9 +12,9 @@ class CMaterial {
 		CMaterial() : m_color(CColor()), m_alpha(1.0), m_reflect(0), m_refract(0) {}
 		CMaterial(const CColor& col, double a, double refl, double refr) {
 			m_color = col;
-			m_alpha = std::min(std::max(0, a), 1);
-			m_reflect = std::min(std::max(refl, 0), 1);
-			m_refract = std::max(0, refr);
+			m_alpha = std::min(std::max(0.0, a), 1.0);
+			m_reflect = std::min(std::max(refl, 0.0), 1.0);
+			m_refract = std::max(0.0, refr);
 		}
 		
 		CColor get_color() const {
@@ -47,4 +49,4 @@ class CMaterial {
 			m_refract = r;
 		}
 };
-
+#endif //CMATERIAL_H
