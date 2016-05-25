@@ -85,7 +85,7 @@ void CRTParser::ParseMaterials(FILE* file) {
 	}
 }
 
-void CRTParser::ParseViewport(FILE* file) {
+void CRTParser::ParseViewport(FILE* file) {	//TODO: set camera here
 	char field[4096];
 	if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 	CPoint3D origin, topleft, bottomleft, topright;
@@ -112,7 +112,6 @@ void CRTParser::ParseViewport(FILE* file) {
 		}
 		if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 	}
-	//TODO: unused values: origin, topleft, bottomleft, topright
 }
 
 void CRTParser::ParseLighters(FILE* file) {
@@ -121,7 +120,7 @@ void CRTParser::ParseLighters(FILE* file) {
 	double ref_power, ref_dst;
 	bool check[2] = { false, false };
 	while(strcmp(field, "endlights") != 0) {
-		if(strcmp(field, "reference") == 0) {
+		if(strcmp(field, "reference") == 0) {	//TODO: normalize lighters here
 			if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 			while(strcmp(field, "endreference")) {
 				if(strcmp(field, "power") == 0) {
