@@ -62,16 +62,27 @@ int main(int argc, char** argv) {
 	}
 
 	std::chrono::steady_clock::time_point t1;
+	std::chrono::steady_clock::time_point t2;
 	if(testing) t1 = std::chrono::steady_clock::now();
 
 	CScene scene(width, height);
-	CRTParser parser;
-	scene.load_file(&parser, filename);
-	scene.render(backlight, gpu_process, testing, fullscreen);
+	try {
+		CRTParser parser;
+		if(testing) t2 = std::chrono::steady_clock::now();
+		scene.load_file(&parser, filename);
+		if(testing) {
+			std::chrono::steady_clock::time_point t_e = std::chrono::steady_clock::now();
+			std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t_e - t2);
+			std::cout << "Parsing time: " << time_span.count() << "s" << std::endl;
+		}
+		scene.render(backlight, gpu_process, testing, fullscreen);
+	} catch(IException* e) {
+		e->what();
+	}
 
 	if(testing) {
-		std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+		std::chrono::steady_clock::time_point t3 = std::chrono::steady_clock::now();
+		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t3 - t1);
 		std::cout << "All working time: " << time_span.count() << "s" << std::endl;
 	}
 
