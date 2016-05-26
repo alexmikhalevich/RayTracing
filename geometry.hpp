@@ -143,6 +143,9 @@ class CVector3D {
 			m_end = v.get_end();
 			m_coordinates = v.get_coordinates();
 		}
+		CVector3D operator-() {
+			return CVector3D(m_begin, m_begin - m_coordinates); 
+		}
 		friend CVector3D operator*(const CVector3D& v1, const CVector3D& v2) {
 			double x = v1.get_coordinates().get_y() * v2.get_coordinates().get_z() - v1.get_coordinates().get_z() * v2.get_coordinates().get_y();
 			double y = v1.get_coordinates().get_z() * v2.get_coordinates().get_x() - v1.get_coordinates().get_x() * v2.get_coordinates().get_z();
