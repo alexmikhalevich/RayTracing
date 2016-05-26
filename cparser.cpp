@@ -85,7 +85,7 @@ void CRTParser::ParseMaterials(FILE* file) {
 	}
 }
 
-void CRTParser::ParseViewport(FILE* file) {	//TODO: set camera here
+void CRTParser::ParseViewport(FILE* file) {
 	char field[4096];
 	if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 	CPoint3D origin, topleft, bottomleft, topright;
@@ -94,6 +94,7 @@ void CRTParser::ParseViewport(FILE* file) {	//TODO: set camera here
 			char x[100], y[100], z[100];
 			if(fscanf(file, "%s %s %s", x, y, z) == EOF) throw new ExEOF();
 			origin = CPoint3D(atof(x), atof(y), atof(z));
+			m_camera.set_position(origin);
 		}
 		else if(strcmp(field, "topleft") == 0) {
 			char x[100], y[100], z[100];
@@ -112,6 +113,11 @@ void CRTParser::ParseViewport(FILE* file) {	//TODO: set camera here
 		}
 		if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 	}
+	CVector3D v1(bottomleft, topleft);
+	CVector3D v2(topleft, topright);
+	CVector3D n(origin, origin + (v1 * v2).get_coordinates());
+	if(CVector3D::dot_product(n, CVector3D(topleft, origin)) < 0) n = -n; //FIXME: invalid condition?
+	m_camera.set_view(CVector3D(origin, origin + n.get_coordinates()));
 }
 
 void CRTParser::ParseLighters(FILE* file) {
@@ -135,9 +141,9 @@ void CRTParser::ParseLighters(FILE* file) {
 			}
 		}
 		else if(strcmp(field, "point") == 0) {
+			CLighter lighter(CPoint3D(), 1.0);
 			if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 			while(strcmp(field, "endpoint") != 0) {
-				CLighter lighter(CPoint3D(), 1.0);
 				if(strcmp(field, "coords") == 0) {
 					char x[100], y[100], z[100];
 					if(fscanf(file, "%s %s %s", x, y, z) == EOF) throw new ExEOF();
@@ -156,6 +162,7 @@ void CRTParser::ParseLighters(FILE* file) {
 			if(!check[0] || !check[1]) throw new ExInvalidLighter();
 			check[0] = false;
 			check[1] = false;
+			m_lighters.push_back(lighter);
 		}
 		if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
 	}
