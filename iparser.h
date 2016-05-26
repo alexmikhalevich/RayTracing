@@ -10,6 +10,7 @@ class IParser {
 		virtual std::vector<IObject3D*>& get_objects() = 0;
 		virtual CCamera get_camera() const = 0; 
 		virtual std::vector<CLighter>& get_lighters() = 0;
+		virtual double get_viewport_dist() = 0;
 		virtual ~IParser() {}
 };
 #endif //IPARSER_H
