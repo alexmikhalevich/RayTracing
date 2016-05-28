@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include "cscene.h"
 #include "cparser.h"
+#include "ctester.hpp"
 
 int main(int argc, char** argv) {
 	bool gpu_process = false;
@@ -12,6 +13,7 @@ int main(int argc, char** argv) {
 	int height = 800;
 	double backlight = 0.0;
 	std::string filename = "";
+	CTester tester;
 
 	if(argc > 1) {
 		for(int i = 0; i < argc; ++i) {
@@ -61,30 +63,19 @@ int main(int argc, char** argv) {
 		height = mode.h;
 	}
 
-	std::chrono::steady_clock::time_point t1;
-	std::chrono::steady_clock::time_point t2;
-	if(testing) t1 = std::chrono::steady_clock::now();
-
+	if(testing) tester.set_timer();
 	CScene scene(width, height);
 	try {
-		CRTParser parser;
-		if(testing) t2 = std::chrono::steady_clock::now();
+		CCustomParser parser;
+		if(testing) tester.set_timer(); 
 		scene.load_file(&parser, filename);
-		if(testing) {
-			std::chrono::steady_clock::time_point t_e = std::chrono::steady_clock::now();
-			std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t_e - t2);
-			std::cout << "Parsing time: " << time_span.count() << "s" << std::endl;
-		}
+		if(testing) std::cout << "Parsing time: " << tester.end_timer() << "s" << std::endl;
 		scene.render(backlight, gpu_process, testing, fullscreen);
 	} catch(IException* e) {
 		e->what();
 	}
 
-	if(testing) {
-		std::chrono::steady_clock::time_point t3 = std::chrono::steady_clock::now();
-		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t3 - t1);
-		std::cout << "All working time: " << time_span.count() << "s" << std::endl;
-	}
+	if(testing) std::cout << "All working time: " << tester.end_timer() << "s" << std::endl;
 
 	return 0;
 }
