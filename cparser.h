@@ -25,7 +25,7 @@ class CCustomParser : public IParser {
 		virtual CCamera get_camera() const;
 		virtual std::vector<CLighter>& get_lighters();
 };
-
+/*
 class CRTParser : public IParser {
 	private:
 		std::vector<IObject3D*> m_objects;
@@ -42,7 +42,6 @@ class CRTParser : public IParser {
 		virtual std::vector<IObject3D*>& get_objects();
 		virtual CCamera get_camera() const;
 		virtual std::vector<CLighter>& get_lighters();
-		virtual double get_viewport_dist();
 };
-
+*/
 #endif //CPARSER_H

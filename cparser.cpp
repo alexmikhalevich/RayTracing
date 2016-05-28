@@ -27,6 +27,31 @@ void CCustomParser::parse(const std::string& filename) {
 			s_stream >> i >> p_x >> p_y >> p_z;
 			m_lighters.push_back(CLighter(CPoint3D(p_x, p_y, p_z), i));
 		}
+		else if(cur_s == "triangle") {
+			double p_x1, p_y1, p_z1, p_x2, p_y2, p_z2, p_x3, p_y3, p_z3;
+			int r, g, b;
+			s_stream >> p_x1 >> p_y1 >> p_z1 >> p_x2 >> p_y2 >> p_z2 >> p_x3 >> p_y3 >> p_z3;
+			s_stream >> r >> g >> b;
+			CMaterial mat;
+			mat.set_color(CColor(r, g, b));
+			std::vector<CPoint3D> vec = { CPoint3D(p_x1, p_y1, p_z1), CPoint3D(p_x2, p_x2, p_z2),
+					CPoint3D(p_x3, p_y3, p_z3) };
+			CTriangle* triangle = new CTriangle(vec, mat);
+			m_objects.push_back(triangle);
+		}
+		else if(cur_s == "quadrangle") {
+			double p_x1, p_y1, p_z1, p_x2, p_y2, p_z2, p_x3, p_y3, p_z3, p_x4, p_y4, p_z4;
+			int r, g, b;
+			s_stream >> p_x1 >> p_y1 >> p_z1 >> p_x2 >> p_y2 >> p_z2 >> p_x3 >> p_y3 >> p_z3 
+				>> p_x4 >> p_y4 >> p_z4;
+			s_stream >> r >> g >> b;
+			CMaterial mat;
+			mat.set_color(CColor(r, g, b));
+			std::vector<CPoint3D> vec = { CPoint3D(p_x1, p_y1, p_z1), CPoint3D(p_x2, p_x2, p_z2),
+					CPoint3D(p_x3, p_y3, p_z3), CPoint3D(p_x4, p_y4, p_z4) };
+			CQuadrangle* quadrangle = new CQuadrangle(vec, mat);
+			m_objects.push_back(quadrangle);
+		}
 		else {
 			std::cerr << "[EE]: Parsing error." << std::endl;
 			exit(-1);	
@@ -45,7 +70,7 @@ CCamera CCustomParser::get_camera() const {
 std::vector<CLighter>& CCustomParser::get_lighters() {
 	return m_lighters;
 }
-
+/*
 void CRTParser::ParseMaterials(FILE* file) {
 	char field[4096];
 	if(fscanf(file, "%s", field) == EOF) throw new ExEOF();
@@ -303,3 +328,4 @@ CCamera CRTParser::get_camera() const {
 std::vector<CLighter>& CRTParser::get_lighters() {
 	return m_lighters;
 }
+*/
